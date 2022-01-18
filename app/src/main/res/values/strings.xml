@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">TaxCalculator</string>
+    <string name="lblIncome">Дохід, грн:</string>
+    <string name="lblEsv">ЄСВ, грн:</string>
+    <string name="lblEp">ЄП, %:</string>
+    <string name="lblTransBankCommission">Комісія банку за переказ, %:</string>
+    <string name="lblOtherCommission">Інші комісії, грн:</string>
+    <string name="lblAllTaxes">Усі податки, грн:</string>
+    <string name="lblTransBankCommissionResult">Комісія за переказ, грн:</string>
+    <string name="lblAllBankCommissions">Усі комісії банку, грн:</string>
+    <string name="lblCleanIncome">Чистий дохід, грн:</string>
+    <string name="txtAllTaxes">0.0</string>
+    <string name="txtTransBankCommissionResult">0.0</string>
+    <string name="txtAllBankCommissions">0.0</string>
+    <string name="txtCleanIncome">0.0</string>
+    <string name="btnResult">Розрахувати</string>
+    <string name="btnClear">Очистити</string>
+
+</resources>
