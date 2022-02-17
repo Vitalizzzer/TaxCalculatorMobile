@@ -10,6 +10,9 @@ import com.vitaliir.taxcalculator.utils.Parser;
 import com.vitaliir.taxcalculator.utils.Tooltip;
 import com.vitaliir.taxcalculator.utils.Validator;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final static String DEFAULT_RESULT = "0.0";
@@ -79,16 +82,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public void btnResult_Click(View view) {
         verifyInput(txtIncome);
+        DecimalFormat decimalFormat = new DecimalFormat("#.##");
+        decimalFormat.setRoundingMode(RoundingMode.UP);
 
         double taxes = countTax();
         double cleanIncomeAfterTaxes = countIncomeAfterTaxes(taxes);
         double otherCommissions = getOtherCommissions();
         double bankTransferCommission = countBankTransferCommission(cleanIncomeAfterTaxes, otherCommissions);
 
-        String allTaxes = String.format(DIGITS_NUM_FORMAT, taxes);
-        String cleanIncome = String.format(DIGITS_NUM_FORMAT, cleanIncomeAfterTaxes - bankTransferCommission - otherCommissions);
-        String allBankCommissions = String.format(DIGITS_NUM_FORMAT, bankTransferCommission + otherCommissions);
-        String bankTransferCommissionResult = String.format(DIGITS_NUM_FORMAT, bankTransferCommission);
+        String allTaxes = String.format(DIGITS_NUM_FORMAT, decimalFormat.format(taxes));
+        String cleanIncome = String.format(DIGITS_NUM_FORMAT,
+                decimalFormat.format(cleanIncomeAfterTaxes - bankTransferCommission - otherCommissions));
+        String allBankCommissions = String.format(DIGITS_NUM_FORMAT,
+                decimalFormat.format(bankTransferCommission + otherCommissions));
+        String bankTransferCommissionResult = String.format(DIGITS_NUM_FORMAT,
+                decimalFormat.format(bankTransferCommission));
 
         txtAllTaxes.setText(allTaxes);
         txtCleanIncome.setText(cleanIncome);
