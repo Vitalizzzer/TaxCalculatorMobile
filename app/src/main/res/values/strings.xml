@@ -15,5 +15,6 @@
     <string name="txtCleanIncome">0.0</string>
     <string name="btnResult">Розрахувати</string>
     <string name="btnClear">Очистити</string>
+    <string name="btnHistory">Історія</string>
 
 </resources>

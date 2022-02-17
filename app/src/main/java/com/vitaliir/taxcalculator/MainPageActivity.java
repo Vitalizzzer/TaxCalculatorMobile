@@ -1,25 +1,38 @@
 package com.vitaliir.taxcalculator;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.gson.Gson;
+import com.vitaliir.taxcalculator.model.MainPage;
 import com.vitaliir.taxcalculator.utils.Parser;
 import com.vitaliir.taxcalculator.utils.Tooltip;
 import com.vitaliir.taxcalculator.utils.Validator;
 
+import org.json.JSONObject;
+
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import lombok.SneakyThrows;
+
+public class MainPageActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final static String DEFAULT_RESULT = "0.0";
     private final static String DIGITS_NUM_FORMAT = "%1.9s";
     private static final String EMPTY_STRING = "";
     private final static String ESV_TOOLTIP = "Єдиний соціальний внесок\n = Мін. зарплата х 22%";
     private final static String EP_TOOLTIP = "Єдиний податок. \nНаприклад, для 3 групи - 5%";
+    private String formattedTime;
 
     private Validator validator;
     private Parser parser;
@@ -39,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         validator = new Validator();
         parser = new Parser();
         tooltip = new Tooltip();
@@ -80,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txtCleanIncome.setText(DEFAULT_RESULT);
     }
 
-    public void btnResult_Click(View view) {
+    public void btnResult_Click(View view) throws InterruptedException {
         verifyInput(txtIncome);
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         decimalFormat.setRoundingMode(RoundingMode.UP);
@@ -102,6 +116,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         txtCleanIncome.setText(cleanIncome);
         txtAllBankCommissions.setText(allBankCommissions);
         txtTransBankCommissionResult.setText(bankTransferCommissionResult);
+
+        saveData();
+    }
+
+    public void btnHistory_Click(View view){
+        Intent intent = new Intent(this, HistoricalPageActivity.class);
+        startActivity(intent);
+
     }
 
     private void verifyInput(TextView txtIncome) {
@@ -139,5 +161,56 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private double getOtherCommissions(){
         String otherCommission = txtOtherCommissions.getText().toString();
         return parser.tryParseDouble(otherCommission);
+    }
+
+    @SneakyThrows
+    private void saveData(){
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        LocalDateTime dateTimeNow = LocalDateTime.now();
+        formattedTime = dateFormatter.format(dateTimeNow);
+
+        MainPage mainPage = new MainPage();
+
+        mainPage.setIncome(txtIncome.getText().toString());
+        mainPage.setEsv(txtEsv.getText().toString());
+        mainPage.setEp(txtEp.getText().toString());
+        mainPage.setBankCommission(txtTransBankCommission.getText().toString());
+        mainPage.setOtherCommission(txtOtherCommissions.getText().toString());
+        mainPage.setAllTaxes(txtAllTaxes.getText().toString());
+        mainPage.setTransBankCommission(txtTransBankCommissionResult.getText().toString());
+        mainPage.setAllBankCommission(txtAllBankCommissions.getText().toString());
+        mainPage.setCleanIncome(txtCleanIncome.getText().toString());
+
+        String json = mainPage.toString();
+        JSONObject jsonObject = new JSONObject(json);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(formattedTime, jsonObject.toString());
+        editor.apply();
+    }
+
+    @SneakyThrows
+    private MainPage loadData(){
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+        String json = sharedPreferences.getString(formattedTime, null);
+        return new Gson().fromJson(json, MainPage.class);
+    }
+
+    private void fillInInputData(MainPage mainPage){
+        txtIncome.setText(mainPage.getIncome());
+        txtEsv.setText(mainPage.getEsv());
+        txtEp.setText(mainPage.getEp());
+        txtTransBankCommission.setText(mainPage.getBankCommission());
+        txtOtherCommissions.setText(mainPage.getOtherCommission());
+        txtAllTaxes.setText(mainPage.getAllTaxes());
+        txtTransBankCommissionResult.setText(mainPage.getTransBankCommission());
+        txtAllBankCommissions.setText(mainPage.getAllBankCommission());
+        txtCleanIncome.setText(mainPage.getCleanIncome());
+    }
+
+    private void LoadHistoricalData(){
+        MainPage mainPage = loadData();
+        fillInInputData(mainPage);
     }
 }
