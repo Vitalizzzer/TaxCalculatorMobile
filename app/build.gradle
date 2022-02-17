@@ -3,6 +3,27 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        debug { /* no changes */ }
+        release {
+            if (project.hasProperty("keys.repo")) {
+                def projectPropsFile = file(project.property("keys.repo") + "/TaxCalculator.properties")
+                if (projectPropsFile.exists()) {
+                    Properties props = new Properties()
+                    props.load(new FileInputStream(projectPropsFile))
+                    storeFile file(file(project.property("keys.repo") + props['RELEASE_STORE_FILE']))
+                    storePassword props['RELEASE_STORE_PASS']
+                    keyAlias props['RELEASE_ALIAS']
+                    keyPassword props['RELEASE_KEY_PASS']
+                }
+            } else {
+                println "======================================================="
+                println "[ERROR] - Please configure release-compilation environment - e.g. in ~/signing directory"
+                println "======================================================="
+            }
+        }
+    }
+
     compileSdk 32
 
     defaultConfig {
@@ -19,12 +40,19 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            applicationVariants.all { variant ->
+                variant.outputs.all { output ->
+                     outputFileName = new File("TaxCalculator.apk")
+                }
+            }
         }
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildToolsVersion '32.0.0'
 }
 
 dependencies {

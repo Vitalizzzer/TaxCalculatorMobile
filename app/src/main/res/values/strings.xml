@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TaxCalculator</string>
+    <string name="app_name">Податковий калькулятор</string>
     <string name="lblIncome">Дохід, грн:</string>
     <string name="lblEsv">ЄСВ, грн:</string>
     <string name="lblEp">ЄП, %:</string>
