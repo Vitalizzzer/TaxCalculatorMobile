@@ -5,22 +5,17 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.gson.Gson;
 import com.vitaliir.taxcalculator.model.MainPage;
 import com.vitaliir.taxcalculator.utils.Parser;
 import com.vitaliir.taxcalculator.utils.Tooltip;
 import com.vitaliir.taxcalculator.utils.Validator;
-
 import org.json.JSONObject;
-
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
 import lombok.SneakyThrows;
 
 public class MainPageActivity extends AppCompatActivity implements View.OnClickListener {
@@ -30,7 +25,6 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
     private static final String EMPTY_STRING = "";
     private final static String ESV_TOOLTIP = "Єдиний соціальний внесок\n = Мін. зарплата х 22%";
     private final static String EP_TOOLTIP = "Єдиний податок. \nНаприклад, для 3 групи - 5%";
-    private String formattedTime;
 
     private Validator validator;
     private Parser parser;
@@ -65,6 +59,8 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         txtEsv = findViewById(R.id.txtEsv);
         txtEp = findViewById(R.id.txtEp);
 
+        fillInInputData();
+
         TextView lblEsv = findViewById(R.id.lblEsv);
         TextView lblEp = findViewById(R.id.lblEp);
         lblEsv.setOnClickListener(this);
@@ -92,7 +88,7 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         txtCleanIncome.setText(DEFAULT_RESULT);
     }
 
-    public void btnResult_Click(View view) throws InterruptedException {
+    public void btnResult_Click(View view){
         verifyInput(txtIncome);
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         decimalFormat.setRoundingMode(RoundingMode.UP);
@@ -114,17 +110,30 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         txtCleanIncome.setText(cleanIncome);
         txtAllBankCommissions.setText(allBankCommissions);
         txtTransBankCommissionResult.setText(bankTransferCommissionResult);
-
-
     }
 
     public void btnSave_Click(View view){
+        verifyInput(txtIncome);
         saveData();
     }
 
     public void btnSaved_Click(View view){
         Intent intent = new Intent(this, SavedPageActivity.class);
         startActivity(intent);
+    }
+
+    private void fillInInputData(){
+        Intent intent = getIntent();
+        txtTransBankCommission.setText(intent.getStringExtra("txtTransBankCommission"));
+        txtTransBankCommissionResult.setText(intent.getStringExtra("txtTransBankCommissionResult"));
+        txtAllBankCommissions.setText(intent.getStringExtra("txtAllBankCommissions"));
+        txtAllTaxes.setText(intent.getStringExtra("txtAllTaxes"));
+        txtCleanIncome.setText(intent.getStringExtra("txtCleanIncome"));
+        txtOtherCommissions.setText(intent.getStringExtra("txtOtherCommissions"));
+        txtIncome.setText(intent.getStringExtra("txtIncome"));
+        txtEsv.setText(intent.getStringExtra("txtEsv"));
+        txtEp.setText(intent.getStringExtra("txtEp"));
+
     }
 
     private void verifyInput(TextView txtIncome) {
@@ -168,7 +177,7 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
     private void saveData(){
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         LocalDateTime dateTimeNow = LocalDateTime.now();
-        formattedTime = dateFormatter.format(dateTimeNow);
+        String formattedTime = dateFormatter.format(dateTimeNow);
 
         MainPage mainPage = new MainPage();
 
@@ -189,29 +198,6 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(formattedTime, jsonObject.toString());
         editor.apply();
-    }
-
-    @SneakyThrows
-    private MainPage loadData(){
-        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
-        String json = sharedPreferences.getString(formattedTime, null);
-        return new Gson().fromJson(json, MainPage.class);
-    }
-
-    private void fillInInputData(MainPage mainPage){
-        txtIncome.setText(mainPage.getIncome());
-        txtEsv.setText(mainPage.getEsv());
-        txtEp.setText(mainPage.getEp());
-        txtTransBankCommission.setText(mainPage.getBankCommission());
-        txtOtherCommissions.setText(mainPage.getOtherCommission());
-        txtAllTaxes.setText(mainPage.getAllTaxes());
-        txtTransBankCommissionResult.setText(mainPage.getTransBankCommission());
-        txtAllBankCommissions.setText(mainPage.getAllBankCommission());
-        txtCleanIncome.setText(mainPage.getCleanIncome());
-    }
-
-    private void LoadHistoricalData(){
-        MainPage mainPage = loadData();
-        fillInInputData(mainPage);
+        Toast.makeText(getApplicationContext(), "Збережено!", Toast.LENGTH_SHORT).show();
     }
 }
