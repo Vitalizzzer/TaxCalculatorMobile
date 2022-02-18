@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.TaxCalculator">
         <activity
-            android:name=".HistoricalPageActivity"
+            android:name=".SavedPageActivity"
             android:exported="false" />
         <activity
             android:name=".MainPageActivity"

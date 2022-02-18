@@ -4,10 +4,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.gson.Gson;
@@ -117,13 +115,16 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         txtAllBankCommissions.setText(allBankCommissions);
         txtTransBankCommissionResult.setText(bankTransferCommissionResult);
 
+
+    }
+
+    public void btnSave_Click(View view){
         saveData();
     }
 
-    public void btnHistory_Click(View view){
-        Intent intent = new Intent(this, HistoricalPageActivity.class);
+    public void btnSaved_Click(View view){
+        Intent intent = new Intent(this, SavedPageActivity.class);
         startActivity(intent);
-
     }
 
     private void verifyInput(TextView txtIncome) {
