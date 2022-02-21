@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -24,7 +25,7 @@ import java.util.Objects;
 
 import lombok.SneakyThrows;
 
-public class SavedPageActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener{
+public class SavedPageActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     private ListView listView;
     private ArrayAdapter<String> arrayAdapter;
@@ -51,15 +52,15 @@ public class SavedPageActivity extends AppCompatActivity implements AdapterView.
         return super.onOptionsItemSelected(item);
     }
 
-    public void showAllSavedItems(){
+    public void showAllSavedItems() {
         SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
 
         Map<String, ?> all = sharedPreferences.getAll();
-        List<String> list = new ArrayList<>();
-        all.forEach((key, value) -> list.add(key));
-        Collections.reverse(list);
+        List<String> keys = new ArrayList<>();
+        all.forEach((key, value) -> keys.add(key));
+        Collections.sort(keys);
 
-        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, list);
+        arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, keys);
         listView.setAdapter(arrayAdapter);
     }
 
@@ -83,7 +84,7 @@ public class SavedPageActivity extends AppCompatActivity implements AdapterView.
     }
 
     @SneakyThrows
-    private MainPage loadData(String item){
+    private MainPage loadData(String item) {
         SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
         String json = sharedPreferences.getString(item, null);
         return new Gson().fromJson(json, MainPage.class);
@@ -93,7 +94,7 @@ public class SavedPageActivity extends AppCompatActivity implements AdapterView.
     @Override
     public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
         String item = adapterView.getItemAtPosition(position).toString();
-        AlertDialog.Builder alert=new AlertDialog.Builder(this);
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
         alert.setTitle("Delete?");
         alert.setMessage("Are you sure you want to delete " + item);
         alert.setNegativeButton("Cancel", null);
@@ -106,7 +107,7 @@ public class SavedPageActivity extends AppCompatActivity implements AdapterView.
         return true;
     }
 
-    private void deleteFromSharedPreferences(String item){
+    private void deleteFromSharedPreferences(String item) {
         SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
         sharedPreferences.edit().remove(item).apply();
     }

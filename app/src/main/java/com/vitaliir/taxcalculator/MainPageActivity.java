@@ -25,6 +25,9 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
     private static final String EMPTY_STRING = "";
     private final static String ESV_TOOLTIP = "Єдиний соціальний внесок\n = Мін. зарплата х 22%";
     private final static String EP_TOOLTIP = "Єдиний податок. \nНаприклад, для 3 групи - 5%";
+    private final static String TITLE = "Некоректні дані!";
+    private final static String EMPTY_INCOME = "Заповніть, будь ласка, поле 'Дохід'";
+    private final static String EMPTY_CLEAN_INCOME = "Зробіть, будь ласка, розрахунок!";
 
     private Validator validator;
     private Parser parser;
@@ -88,8 +91,8 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         txtCleanIncome.setText(DEFAULT_RESULT);
     }
 
-    public void btnResult_Click(View view){
-        verifyInput(txtIncome);
+    public void btnResult_Click(View view) {
+        isDataCorrect(txtIncome, TITLE, EMPTY_INCOME);
         DecimalFormat decimalFormat = new DecimalFormat("#.##");
         decimalFormat.setRoundingMode(RoundingMode.UP);
 
@@ -112,17 +115,18 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         txtTransBankCommissionResult.setText(bankTransferCommissionResult);
     }
 
-    public void btnSave_Click(View view){
-        verifyInput(txtIncome);
-        saveData();
+    public void btnSave_Click(View view) {
+        if (isDataCorrect(txtCleanIncome, TITLE, EMPTY_CLEAN_INCOME)) {
+            saveData();
+        }
     }
 
-    public void btnSaved_Click(View view){
+    public void btnSaved_Click(View view) {
         Intent intent = new Intent(this, SavedPageActivity.class);
         startActivity(intent);
     }
 
-    private void fillInInputData(){
+    private void fillInInputData() {
         Intent intent = getIntent();
         txtTransBankCommission.setText(intent.getStringExtra("txtTransBankCommission"));
         txtTransBankCommissionResult.setText(intent.getStringExtra("txtTransBankCommissionResult"));
@@ -133,14 +137,15 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         txtIncome.setText(intent.getStringExtra("txtIncome"));
         txtEsv.setText(intent.getStringExtra("txtEsv"));
         txtEp.setText(intent.getStringExtra("txtEp"));
-
     }
 
-    private void verifyInput(TextView txtIncome) {
-        if (validator.isEmpty(txtIncome)) {
-            TaxDialog dialog = new TaxDialog();
+    private boolean isDataCorrect(TextView field, @SuppressWarnings("SameParameterValue") String title, String message) {
+        if (validator.isEmpty(field) || validator.isZero(field)) {
+            TaxDialog dialog = new TaxDialog(title, message);
             dialog.show(getSupportFragmentManager(), "InvalidInputTag");
+            return false;
         }
+        return true;
     }
 
     private double countTax() {
@@ -163,24 +168,38 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         return readyForTransfer - salaryWithoutCommission;
     }
 
-    private double getTransBankCommission(){
+    private double getTransBankCommission() {
         String replaced = txtTransBankCommission.getText().toString();
         return parser.tryParseDouble(replaced);
     }
 
-    private double getOtherCommissions(){
+    private double getOtherCommissions() {
         String otherCommission = txtOtherCommissions.getText().toString();
         return parser.tryParseDouble(otherCommission);
     }
 
     @SneakyThrows
-    private void saveData(){
+    private void saveData() {
+        String formattedTime = getDateTimeNow();
+        String json = getMainPageData().toString();
+        JSONObject jsonObject = new JSONObject(json);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(formattedTime, jsonObject.toString());
+        editor.apply();
+
+        Toast.makeText(getApplicationContext(), "Збережено!", Toast.LENGTH_SHORT).show();
+    }
+
+    private String getDateTimeNow(){
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
         LocalDateTime dateTimeNow = LocalDateTime.now();
-        String formattedTime = dateFormatter.format(dateTimeNow);
+        return dateFormatter.format(dateTimeNow);
+    }
 
+    private MainPage getMainPageData(){
         MainPage mainPage = new MainPage();
-
         mainPage.setIncome(txtIncome.getText().toString());
         mainPage.setEsv(txtEsv.getText().toString());
         mainPage.setEp(txtEp.getText().toString());
@@ -190,14 +209,6 @@ public class MainPageActivity extends AppCompatActivity implements View.OnClickL
         mainPage.setTransBankCommission(txtTransBankCommissionResult.getText().toString());
         mainPage.setAllBankCommission(txtAllBankCommissions.getText().toString());
         mainPage.setCleanIncome(txtCleanIncome.getText().toString());
-
-        String json = mainPage.toString();
-        JSONObject jsonObject = new JSONObject(json);
-
-        SharedPreferences sharedPreferences = getSharedPreferences("shared preferences", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(formattedTime, jsonObject.toString());
-        editor.apply();
-        Toast.makeText(getApplicationContext(), "Збережено!", Toast.LENGTH_SHORT).show();
+        return mainPage;
     }
 }
